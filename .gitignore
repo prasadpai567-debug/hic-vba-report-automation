@@ -1,0 +1,24 @@
+# Excel workbooks and operational exports
+*.xlsm
+*.xlsx
+*.xls
+*.xlsb
+*.csv
+
+# Runtime state and logs
+*.log
+*.intent
+*.lock
+.hic-state/
+HIC-Controller-Logs/
+
+# Local analysis and generated working files
+work/
+outputs/
+__pycache__/
+
+# Local editor and OS files
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
