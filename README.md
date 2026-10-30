@@ -2,7 +2,33 @@
 
 An Excel VBA controller for a recurring HIC report update process. The controller locates the correct monthly report on a Windows network share, prepares the reporting period, runs the report workbook's existing data-retrieval macro in a separate hidden Excel instance, refreshes the report, saves the updated workbook, and creates an Outlook draft for review.
 
-This repository description is based on the supplied `HIC UPDATE.xlsm` workbook and its embedded VBA project. Internal paths, database identifiers, recipients, company addresses, and report data should be replaced with placeholders before publishing.
+This repository contains sanitized exported VBA source and documentation derived from the supplied `HIC UPDATE.xlsm` workbook. Internal paths, database identifiers, recipients, company addresses, and report data must remain placeholders in any public release.
+
+> [!IMPORTANT]
+> This is a portfolio-safe source repository, not a standalone runnable application. A clean clone does not include the controller workbook, the external monthly report workbook, enterprise database access, the UNC share, or classic Outlook. Do not enable macros or restore production configuration without a trusted, controlled deployment process.
+
+## Repository status
+
+The repository intentionally tracks:
+
+- Sanitized VBA exports under `src/`.
+- Business and workbook-analysis documentation.
+- Ignore rules for Excel artifacts, runtime state, logs, and local working files.
+
+It does not track a live workbook, operational data, credentials, screenshots, automated tests, or CI workflow. Runtime claims below are based on source inspection and the documented workbook analysis; they are not a substitute for a controlled Excel/Outlook test.
+
+## Repository contents
+
+```text
+.
+├── README.md
+├── WORKBOOK_ANALYSIS.md
+├── src/
+│   ├── README.md
+│   ├── controller/HicController.bas
+│   └── report/HicAutomation.bas
+└── .gitignore
+```
 
 ## Project overview
 
@@ -134,12 +160,11 @@ Outlook Drafts + run log + .hic-state markers
 | --- | --- |
 | `Module4` | Controller implementation: setup, validation, worker Excel orchestration, report update, Outlook draft, logging, and monthly file creation. The code comments refer to this logical role as `HicController`. |
 | `HicAutomation` | Report-side automation module containing `HicRun`, refresh checks, PivotTable validation, and `HicInjectSQL`. |
-| `HicAutomation1` | Duplicate of `HicAutomation` with a different module name. |
-| `HicAutomation2` | Duplicate of `HicAutomation` with a different module name. |
+| `HicAutomation1`, `HicAutomation2` | Duplicate modules reported in the original workbook analysis; they are not separate files in this Git repository. |
 | `Module1`, `Module2`, `Module3` | Empty standard modules. |
 | `ThisWorkbook`, `Sheet1`, `Sheet2` | Class modules with no user procedure body in the extracted source. |
 
-The three `HicAutomation` modules are effectively identical apart from their module-name attribute. They appear to be report-side modules or retained copies rather than separate features of the controller. Before a public release, remove duplicate source copies in a separate reviewed branch and confirm which module belongs in the monthly report workbook.
+The original workbook analysis reported three effectively identical `HicAutomation` modules. This repository tracks one sanitized export, `src/report/HicAutomation.bas`; the duplicate modules are not independently reproducible from the Git tree. Before a production release, confirm which module belongs in the monthly report workbook and remove duplicate copies in a separately reviewed workbook change.
 
 ### Report-side SQL and validation logic
 
@@ -156,7 +181,7 @@ The embedded `HicAutomation` source includes an alternative report-side path tha
 - Saves the report after successful validation.
 - Supports `Test`, `Review`, and `Scheduled` modes in that module.
 
-Those report-side modes are present in the embedded source, but the supplied controller's visible buttons call the controller's validation, test, and draft workflow. In particular, the visible controller saves an Outlook draft and does not automatically send mail.
+Those report-side modes are present in the embedded source, but the supplied controller's visible buttons call the controller's validation, test, and draft workflow. The visible controller saves an Outlook draft and does not automatically send mail. The separate report-side `Scheduled` branch can call Outlook `.Send` when `AUTO_SEND` is enabled; treat that path as disabled and separately approved until it has passed a controlled deployment review.
 
 ## Requirements
 
@@ -170,6 +195,10 @@ Those report-side modes are present in the embedded source, but the supplied con
 - For the report-side SQL path: the approved Microsoft OLE DB SQL Server provider, network/database access, and least-privilege Windows authentication.
 
 The controller is Windows-specific because it uses Windows APIs, WMI, UNC paths, Excel COM automation, and classic Outlook automation.
+
+## Testing status
+
+No automated test suite or CI workflow is included. Static source review can verify control flow, placeholders, and documented assumptions, but runtime verification requires desktop Excel, the external monthly workbook, the configured UNC/SMB share, database access for the report-side path, and classic Outlook. Do not claim a successful end-to-end run from a clean clone.
 
 ## Installation and setup
 
@@ -287,11 +316,12 @@ Do not show internal server names, email addresses, SQL names, report data, loca
 
 - The supplied controller workbook contains an apparently blank `Sheet1` with a legacy `RUN HIC AUTOMATION` shape.
 - The visible controller shapes reference `HicController.*`, but the extracted standard module is named `Module4`. Verify and correct the binding in a controlled release copy.
-- Three duplicate `HicAutomation` modules are embedded. Confirm the intended report-side module and remove duplicate copies before publishing.
+- The original workbook analysis reported three duplicate `HicAutomation` modules; this repository tracks only one sanitized export. Confirm the intended report-side module and remove duplicate copies in a reviewed workbook release before publishing.
 - No VBA UserForms were found. The user interface is built from worksheet cells and shapes.
 - No self-contained scheduler was found in the controller. The `SCHEDULE_TIME_ZONE` and scheduled mode belong to the embedded report-side automation path, not the visible controller buttons.
 - The controller depends on an external monthly report workbook and enterprise services. It cannot be meaningfully run from a clean GitHub clone without those dependencies.
 - Classic Outlook COM automation is used. New Outlook compatibility should be tested separately.
+- The report-side source contains a `Scheduled` mode capable of calling Outlook `.Send` when `AUTO_SEND` is enabled. The visible controller workflow is draft-only, but any scheduled send must be explicitly approved and tested separately.
 - A static VBA inspection tool reported a possible VBA-stomping condition. This is a release-review signal, not proof of malicious behavior. Compile and compare the VBA source and P-code in a trusted Excel/VBE environment before public distribution.
 
 ## Suggested future improvements
