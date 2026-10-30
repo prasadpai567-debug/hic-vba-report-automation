@@ -4,6 +4,15 @@
 *.xls
 *.xlsb
 *.csv
+*.xlam
+*.xltm
+*.xltx
+
+# Environment, backup, and temporary files
+.env
+.env.*
+*.bak
+*.tmp
 
 # Runtime state and logs
 *.log
